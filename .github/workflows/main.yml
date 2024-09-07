@@ -1,0 +1,45 @@
+name: .NET Core CI
+
+# This triggers the workflow on push or pull request to the main branch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Setup .NET Core environment
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.x' # Use .NET Core 8.x
+
+      # Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # Build the project
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      # Run unit tests
+      - name: Run tests
+        run: dotnet test --no-build --verbosity normal
+
+      # (Optional) Publish build artifacts
+      - name: Publish Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: '**/TestResults/*.*'
