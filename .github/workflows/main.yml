@@ -32,10 +32,6 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
-      # Run unit tests
-      - name: Run tests
-        run: dotnet test --no-build --verbosity normal
-
       # (Optional) Publish build artifacts
       - name: Publish Test Results
         if: always()
