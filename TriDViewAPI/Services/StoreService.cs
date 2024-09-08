@@ -9,16 +9,11 @@ namespace TriDViewAPI.Services
 {
     public class StoreService : IStoreService
     {
-        //private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration;
-        private readonly UserManager<User> _userManager;
         private readonly IStoreRepository _storeRepository;
         private readonly IUserRepository _userRepository;
 
-        public StoreService(IConfiguration configuration, UserManager<User> userManager, IStoreRepository storeRepository, IUserRepository userRepository)
+        public StoreService(IStoreRepository storeRepository, IUserRepository userRepository)
         {
-            _configuration = configuration;
-            _userManager = userManager;
             _storeRepository = storeRepository;
             _userRepository = userRepository;
         }
