@@ -29,8 +29,12 @@ jobs:
         run: dotnet restore
 
       # Build the project
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+      - name: Build the solution
+        run: dotnet build --configuration Debug
+
+      # Run tests
+      - name: Run tests
+        run: dotnet test --no-build --verbosity detailed
 
       # (Optional) Publish build artifacts
       - name: Publish Test Results
