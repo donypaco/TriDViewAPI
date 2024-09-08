@@ -30,7 +30,7 @@ jobs:
 
       # Build the project
       - name: Build the solution
-        run: dotnet build --configuration Debug
+        run: dotnet build --configuration Release
 
       # Run tests
       - name: Run tests
