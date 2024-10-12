@@ -31,13 +31,11 @@ builder.Services.AddScoped<IStoreService, StoreService>();
 builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-builder.Services.AddCors(p => p.AddPolicy("AllowOrigin", builder =>
-{
-    builder.WithOrigins("http://localhost:4200")
-    .AllowAnyMethod()
-    .AllowAnyOrigin()
-    .AllowAnyHeader();
-}));
+builder.Services.AddCors(p => p.AddPolicy("AllowAnyOrigin",
+        policy => policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()));
 
 builder.Configuration.AddJsonFile("appsettings.Development.json");
 builder.Services.AddAuthentication(options =>
@@ -78,7 +76,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 //app.UseMiddleware<ErrorLoggingMiddleware>();
-app.UseCors("AllowOrigin");
+app.UseCors("AllowAnyOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

@@ -9,6 +9,8 @@
         public string StoreName { get; set; }
         public string StoreLocation { get; set; }
         public string LogoKey { get; set; }
-        public bool IsActive { get; set; } 
+        public bool IsActive { get; set; }
+        public int PlanID { get; set; }
+        public Plan Plan { get; set; } = new Plan();
     }
 }

@@ -13,6 +13,7 @@ namespace TriDViewAPI.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<Store> Stores { get; set; }
+        public DbSet<Plan> Plans { get; set; }
     }
 
 }
