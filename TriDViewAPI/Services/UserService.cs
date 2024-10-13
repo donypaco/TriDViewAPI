@@ -8,6 +8,7 @@ using System.Text;
 using TriDViewAPI.Data;
 using TriDViewAPI.DTO;
 using TriDViewAPI.Models;
+using TriDViewAPI.Services;
 using TriDViewAPI.Services.Interfaces;
 
 namespace TaskManagementSystem.Services
@@ -16,14 +17,15 @@ namespace TaskManagementSystem.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
-        private readonly UserManager<User> _userManager; 
+        private readonly UserManager<User> _userManager;
+        private readonly ILogService _logService;
 
-
-        public UserService(ApplicationDbContext context, IConfiguration configuration, UserManager<User> userManager)
+        public UserService(ApplicationDbContext context, IConfiguration configuration, UserManager<User> userManager, ILogService logService)
         {
             _context = context;
             _configuration = configuration;
             _userManager = userManager;
+            _logService = logService;
         }
         public async Task<string> Register(RegisterModel model)
         {
@@ -49,6 +51,8 @@ namespace TaskManagementSystem.Services
             }
             catch (Exception ex)
             {
+                _logService.LogError("UserService", ex.ToString());
+                throw;
             }
             return null;
         }
@@ -76,8 +80,9 @@ namespace TaskManagementSystem.Services
                 }
                 return null;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
+                _logService.LogError("UserService", ex.ToString());
                 throw;
             }
             return null;
@@ -85,36 +90,55 @@ namespace TaskManagementSystem.Services
         }
         public string GenerateJwtToken(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new List<Claim>
+            try
             {
-            new Claim(ClaimTypes.NameIdentifier, user.Id_User.ToString()),
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Aud, _configuration["Jwt:Audience"])
-            };
 
-            var token = new JwtSecurityToken(
-                _configuration["Jwt:Issuer"],
-                _configuration["Jwt:Issuer"],
-                claims,
-                expires: DateTime.Now.AddMinutes(10),
-                signingCredentials: credentials
-            );
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                var claims = new List<Claim>
+                {
+                new Claim(ClaimTypes.NameIdentifier, user.Id_User.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Aud, _configuration["Jwt:Audience"])
+                };
+
+                var token = new JwtSecurityToken(
+                    _configuration["Jwt:Issuer"],
+                    _configuration["Jwt:Issuer"],
+                    claims,
+                    expires: DateTime.Now.AddMinutes(10),
+                    signingCredentials: credentials
+                );
+
+                return new JwtSecurityTokenHandler().WriteToken(token);
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError("UserService", ex.ToString());
+                throw;
+            }
+            return null;
         }
 
         public async Task<List<RoleDTO>> GetRoles()
         {
-            var roles = await _context.Roles.Select(r => new RoleDTO
+            try
             {
-                Id = r.Id,
-                RoleName = r.RoleName
-            }).ToListAsync();
+                var roles = await _context.Roles.Select(r => new RoleDTO
+                {
+                    Id = r.Id,
+                    RoleName = r.RoleName
+                }).ToListAsync();
 
-            return roles;
+                return roles;
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError("UserService", ex.ToString());
+                throw;
+            }
+            return null;
         }
     }
 }

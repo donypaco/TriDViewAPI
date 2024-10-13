@@ -2,6 +2,8 @@
 {
     public interface ILogService
     {
-        void LogException(HttpContext context, Exception ex);
+        Task LogError(string title, string message);
+        Task LogInfo(string title, string message);
+        Task LogWarning(string title, string message);
     }
 }

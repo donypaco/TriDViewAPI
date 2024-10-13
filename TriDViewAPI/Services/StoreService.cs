@@ -12,16 +12,26 @@ namespace TriDViewAPI.Services
         private readonly IStoreRepository _storeRepository;
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
+        private readonly ILogService _logService;
 
-        public StoreService(IStoreRepository storeRepository, IUserRepository userRepository, IConfiguration configuration)
+        public StoreService(IStoreRepository storeRepository, IUserRepository userRepository, IConfiguration configuration, ILogService logService)
         {
             _storeRepository = storeRepository;
             _userRepository = userRepository;
             _configuration = configuration;
+            _logService = logService;
         }
         public async Task<Store> GetStoreById(int id)
         {
-            return await _storeRepository.GetStoreByIdAsync(id);
+            try
+            {
+                return await _storeRepository.GetStoreByIdAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError("StoreService", ex.ToString());
+                throw;
+            }
         }
         public async Task<IEnumerable<StoreDTO>> GetAllActiveStores()
         {
@@ -41,14 +51,24 @@ namespace TriDViewAPI.Services
                 }
                 return stores;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
+                _logService.LogError("StoreService",ex.ToString());
+                throw;
             }
             return null;
         }
         public async Task DeleteStore(int id)
         {
-            await _storeRepository.DeleteStoreAsync(id);
+            try
+            {
+                await _storeRepository.DeleteStoreAsync(id);
+            }
+            catch (Exception ex)
+            {
+                _logService.LogError("StoreService", ex.ToString());
+                throw;
+            }
         }
         public async Task UpdateStore(StoreDTO storeDTO)
         {
@@ -60,12 +80,17 @@ namespace TriDViewAPI.Services
                 {
                     store.StoreName = storeDTO.StoreName;
                     store.StoreLocation = storeDTO.StoreLocation;
+                    store.PlanID = storeDTO.PlanID;
                     store.IsActive = storeDTO.IsActive;
                     store.LogoKey = storeDTO.LogoKey;
                 }
                 await _storeRepository.UpdateStoreAsync(store);
             }
-            catch (Exception ex) { }
+            catch (Exception ex) 
+            {
+                _logService.LogError("StoreService", ex.ToString());
+                throw;
+            }
         }
         public async Task AddStore(StoreDTO storeDTO, int userId)
         {
@@ -94,7 +119,8 @@ namespace TriDViewAPI.Services
             }
             catch(Exception ex)
             {
-
+                _logService.LogError("StoreService", ex.ToString());
+                throw;
             }
         }
 
