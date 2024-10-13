@@ -11,6 +11,8 @@ namespace TriDViewAPI.DTO
         public string StoreName { get; set; }
         public string StoreLocation { get; set; }
         public string LogoKey { get; set; }
+        public int PlanID { get; set; }
         public bool IsActive { get; set; }
+        public string Base64File { get; set; }
     }
 }
