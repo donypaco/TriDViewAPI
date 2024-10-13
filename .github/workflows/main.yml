@@ -23,6 +23,9 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.x' # Use .NET Core 8.x
+          
+      - name: Check .NET Core version
+        run: dotnet --version
 
       # Restore dependencies
       - name: Restore dependencies
@@ -34,7 +37,7 @@ jobs:
 
       # Run tests
       - name: Run tests
-        run: dotnet test --no-build --verbosity detailed
+        run: dotnet test --no-build --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test_results.trx" --verbosity detailed
 
       # (Optional) Publish build artifacts
       - name: Publish Test Results
