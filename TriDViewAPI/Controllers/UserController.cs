@@ -37,7 +37,7 @@ namespace TaskManagementSystem.Controllers
             }
             catch (Exception ex)
             {
-                _logService.LogException(HttpContext, ex);
+                _logService.LogError("UserController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
@@ -61,7 +61,7 @@ namespace TaskManagementSystem.Controllers
             }
             catch (Exception ex)
             {
-                _logService.LogException(HttpContext, ex);
+                _logService.LogError("UserController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
@@ -74,6 +74,7 @@ namespace TaskManagementSystem.Controllers
             }
             catch (Exception ex)
             {
+                _logService.LogError("UserController", ex.ToString());            
                 return null;
             }
         }
