@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TriDViewAPI.Data;
 
@@ -11,9 +12,11 @@ using TriDViewAPI.Data;
 namespace TriDViewAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241012232811_addReference")]
+    partial class addReference
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,6 +51,23 @@ namespace TriDViewAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Logs");
+                });
+
+            modelBuilder.Entity("TriDViewAPI.Models.Plan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("PlanName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Plans");
                 });
 
             modelBuilder.Entity("TriDViewAPI.Models.Role", b =>
@@ -86,6 +106,9 @@ namespace TriDViewAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("PlanID")
+                        .HasColumnType("int");
+
                     b.Property<string>("StoreLocation")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -98,6 +121,8 @@ namespace TriDViewAPI.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PlanID");
 
                     b.HasIndex("UserID");
 
@@ -176,11 +201,19 @@ namespace TriDViewAPI.Migrations
 
             modelBuilder.Entity("TriDViewAPI.Models.Store", b =>
                 {
+                    b.HasOne("TriDViewAPI.Models.Plan", "Plan")
+                        .WithMany("Stores")
+                        .HasForeignKey("PlanID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("TriDViewAPI.Models.User", "UserRegistered")
                         .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Plan");
 
                     b.Navigation("UserRegistered");
                 });
@@ -194,6 +227,11 @@ namespace TriDViewAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("TriDViewAPI.Models.Plan", b =>
+                {
+                    b.Navigation("Stores");
                 });
 
             modelBuilder.Entity("TriDViewAPI.Models.Role", b =>
