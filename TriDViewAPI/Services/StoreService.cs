@@ -33,8 +33,11 @@ namespace TriDViewAPI.Services
                 foreach (var store in stores)
                 {
                     string fullPath = Path.Combine(directoryPath, store.LogoKey);
-                    var imageByteArray = System.IO.File.ReadAllBytes(fullPath);
-                    store.Base64File = Convert.ToBase64String(imageByteArray);
+                    if (File.Exists(fullPath))
+                    {
+                        var imageByteArray = System.IO.File.ReadAllBytes(fullPath);
+                        store.Base64File = Convert.ToBase64String(imageByteArray);
+                    }
                 }
                 return stores;
             }
