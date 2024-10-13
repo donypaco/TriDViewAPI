@@ -50,6 +50,23 @@ namespace TriDViewAPI.Migrations
                     b.ToTable("Logs");
                 });
 
+            modelBuilder.Entity("TriDViewAPI.Models.Plan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("PlanName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Plans");
+                });
+
             modelBuilder.Entity("TriDViewAPI.Models.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -86,6 +103,9 @@ namespace TriDViewAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("PlanID")
+                        .HasColumnType("int");
+
                     b.Property<string>("StoreLocation")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -98,6 +118,8 @@ namespace TriDViewAPI.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PlanID");
 
                     b.HasIndex("UserID");
 
@@ -176,11 +198,19 @@ namespace TriDViewAPI.Migrations
 
             modelBuilder.Entity("TriDViewAPI.Models.Store", b =>
                 {
+                    b.HasOne("TriDViewAPI.Models.Plan", "Plan")
+                        .WithMany("Stores")
+                        .HasForeignKey("PlanID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("TriDViewAPI.Models.User", "UserRegistered")
                         .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Plan");
 
                     b.Navigation("UserRegistered");
                 });
@@ -194,6 +224,11 @@ namespace TriDViewAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("TriDViewAPI.Models.Plan", b =>
+                {
+                    b.Navigation("Stores");
                 });
 
             modelBuilder.Entity("TriDViewAPI.Models.Role", b =>
