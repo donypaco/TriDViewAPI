@@ -75,8 +75,10 @@ namespace TriDViewAPI.Services
                 string fullPath = Path.Combine(directoryPath, storeDTO.LogoKey);
                 byte[] imageByteArray = Convert.FromBase64String(storeDTO.Base64File);
 
-                File.WriteAllBytes(fullPath, imageByteArray);
-
+                if (Directory.Exists(directoryPath))
+                {
+                    File.WriteAllBytes(fullPath, imageByteArray);
+                }
                 var user = await _userRepository.GetUserByIdAsync(userId);
                 var store = new Store
                 {
