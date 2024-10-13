@@ -4,6 +4,7 @@ using TriDViewAPI.Data.Repositories.Interfaces;
 using TriDViewAPI.DTO;
 using TriDViewAPI.Models;
 using TriDViewAPI.Services;
+using TriDViewAPI.Services.Interfaces;
 
 namespace TriDViewTests
 {
@@ -11,16 +12,19 @@ namespace TriDViewTests
     {
         private readonly Mock<IStoreRepository> _storeRepositoryMock;
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<ILogService> _logServiceMock;
+
         private readonly StoreService _storeService;
         private readonly Mock<IConfiguration> _configurationMock;
         public StoreServiceTests()
         {
             _storeRepositoryMock = new Mock<IStoreRepository>();
             _userRepositoryMock = new Mock<IUserRepository>();
+            _logServiceMock = new Mock<ILogService>();
             _configurationMock = new Mock<IConfiguration>();
-
+            
             _configurationMock.Setup(config => config["directoryPath"]).Returns("C:\\Users\\USER\\Downloads\\TriDViewApp");
-            _storeService = new StoreService(_storeRepositoryMock.Object, _userRepositoryMock.Object, _configurationMock.Object);
+            _storeService = new StoreService(_storeRepositoryMock.Object, _userRepositoryMock.Object, _configurationMock.Object, _logServiceMock.Object);
         }
 
         [Fact]
