@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TriDViewAPI.DTO;
 using TriDViewAPI.Services.Interfaces;
 
-namespace TaskManagementSystem.Controllers
+namespace TriDViewAPI.Controllers
 {
     //[Authorize("JwtPolicy")]
     [Route("api/[controller]")]

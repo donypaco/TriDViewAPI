@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Data;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TriDViewAPI.Models
 {
@@ -22,6 +21,10 @@ namespace TriDViewAPI.Models
         public string Password { get; set; }
 
         public int RoleId { get; set; }
-        public Role Role { get; set; } = new Role();
+
+        [ForeignKey("RoleId")]
+        public Role Role { get; set; }
+        public List<Product> Products { get; set; } = new List<Product>();
+        public List<Store> Stores { get; set; } = new List<Store>();
     }
 }
