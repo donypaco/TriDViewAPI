@@ -56,7 +56,7 @@ namespace TriDViewAPI.Services
                 _logService.LogError("StoreService",ex.ToString());
                 throw;
             }
-            return null;
+            return Enumerable.Empty<StoreDTO>();
         }
         public async Task DeleteStore(int id)
         {
