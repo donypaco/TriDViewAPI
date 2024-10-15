@@ -11,7 +11,7 @@ using TriDViewAPI.Models;
 using TriDViewAPI.Services;
 using TriDViewAPI.Services.Interfaces;
 
-namespace TaskManagementSystem.Services
+namespace TriDViewAPI.Services
 {
     public class UserService : IUserService
     {

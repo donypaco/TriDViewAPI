@@ -1,5 +1,5 @@
-﻿using TaskManagementSystem.Data;
-using TriDViewAPI.Data;
+﻿using TriDViewAPI.Data;
+using TriDViewAPI.Models;
 using TriDViewAPI.Services.Interfaces;
 
 namespace TriDViewAPI.Services

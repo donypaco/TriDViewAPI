@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using TaskManagementSystem.Services;
 using TriDViewAPI.Data;
 using TriDViewAPI.Models;
 using TriDViewAPI.Services.Interfaces;

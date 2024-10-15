@@ -79,6 +79,7 @@ namespace TriDViewAPI.Services
                 if (store != null)
                 {
                     store.StoreName = storeDTO.StoreName;
+                    store.Description = storeDTO.Description;
                     store.StoreLocation = storeDTO.StoreLocation;
                     store.PlanID = storeDTO.PlanID;
                     store.IsActive = storeDTO.IsActive;
@@ -108,6 +109,7 @@ namespace TriDViewAPI.Services
                 var store = new Store
                 {
                     StoreName = storeDTO.StoreName,
+                    Description = storeDTO.Description,   
                     StoreLocation = storeDTO.StoreLocation,
                     DateTimeRegistered = DateTime.Now,
                     IsActive = storeDTO.IsActive,

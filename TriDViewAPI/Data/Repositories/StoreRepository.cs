@@ -22,6 +22,7 @@ namespace TriDViewAPI.Data.Repositories
                 {
                     Id = s.Id,
                     StoreName = s.StoreName,
+                    Description = s.Description,
                     StoreLocation = s.StoreLocation,
                     LogoKey = s.LogoKey,
                     IsActive = s.IsActive

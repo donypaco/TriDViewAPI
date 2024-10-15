@@ -8,6 +8,7 @@ namespace TriDViewAPI.DTO
         //public int UserID { get; set; }
         //public User UserRegistered { get; set; } = new User();
         //public DateTimeOffset DateTimeRegistered { get; set; }
+        public string Description { get; set; }
         public string StoreName { get; set; }
         public string StoreLocation { get; set; }
         public string LogoKey { get; set; }
