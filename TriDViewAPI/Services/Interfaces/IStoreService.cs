@@ -10,5 +10,7 @@ namespace TriDViewAPI.Services.Interfaces
         Task DeleteStore(int id);
         Task UpdateStore(StoreDTO store);
         Task AddStore(StoreDTO storeDTO, int userId);
+        Task RegisterStore(StoreDTO storeDTO, IFormFile logo);
+        Task ConfirmRegistration(int storeId);
     }
 }
