@@ -49,7 +49,7 @@ namespace TriDViewAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logService.LogError("UserController", ex.ToString());
+                await _logService.LogError("UserController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
@@ -72,7 +72,7 @@ namespace TriDViewAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logService.LogError("UserController", ex.ToString());
+                await _logService.LogError("UserController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
@@ -98,10 +98,45 @@ namespace TriDViewAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logService.LogError("UserController", ex.ToString());
+                await _logService.LogError("UserController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
+        [HttpPost("Register")]
+        public async Task<IActionResult> RegisterStore([FromForm] StoreDTO storeDto)
+        {
+            try
+            {
+                if (storeDto == null || storeDto.formFile == null)
+                    return BadRequest("Invalid store data");
 
+                await _storeService.RegisterStore(storeDto, storeDto.formFile);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError("UserController", ex.ToString());
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
+        [HttpPut("ConfirmRegistration/{storeId}")]
+        public async Task<IActionResult> ConfirmRegistration(int storeId)
+        {
+            try
+            {
+                if (storeId <= 0)  // Changed to <= to catch 0 and negative IDs
+                    return BadRequest("Invalid store ID");
+
+                await _storeService.ConfirmRegistration(storeId);
+
+                return NoContent(); // 204 No Content response
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError("UserController", ex.ToString());
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
     }
 }

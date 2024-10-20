@@ -29,7 +29,7 @@ namespace TriDViewAPI.Services
             }
             catch (Exception ex)
             {
-                _logService.LogError("StoreService", ex.ToString());
+                await _logService.LogError("StoreService", ex.ToString());
                 throw;
             }
         }
@@ -39,21 +39,40 @@ namespace TriDViewAPI.Services
             {
                 var directoryPath = _configuration["directoryPath"];
                 var stores = await _storeRepository.GetAllActiveStoresAsync();
+                var storeDTOs = new List<StoreDTO>();
 
                 foreach (var store in stores)
                 {
-                    string fullPath = Path.Combine(directoryPath, store.LogoKey);
-                    if (File.Exists(fullPath))
+                    var storeDto = new StoreDTO
                     {
-                        var imageByteArray = System.IO.File.ReadAllBytes(fullPath);
-                        store.Base64File = Convert.ToBase64String(imageByteArray);
+                        Id = store.Id,
+                        Description = store.Description,
+                        StoreName = store.StoreName,
+                        StoreLocation = store.StoreLocation,
+                        PlanID = store.PlanID,
+                        IsActive = store.IsActive,
+                        LogoKey = store.LogoKey
+                    };
+
+
+                    if (!string.IsNullOrWhiteSpace(store.LogoKey))
+                    {
+                        string fullPath = Path.Combine(directoryPath, store.LogoKey);
+                        if (File.Exists(fullPath))
+                        {
+                            var imageByteArray = System.IO.File.ReadAllBytes(fullPath);
+                            storeDto.Base64File = Convert.ToBase64String(imageByteArray);
+                        }
                     }
+
+                    storeDTOs.Add(storeDto);
                 }
-                return stores;
+
+                return storeDTOs;
             }
             catch (Exception ex)
             {
-                _logService.LogError("StoreService",ex.ToString());
+                await _logService.LogError("StoreService",ex.ToString());
                 throw;
             }
             return Enumerable.Empty<StoreDTO>();
@@ -74,7 +93,7 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                var store = await _storeRepository.GetStoreByIdAsync(storeDTO.Id);
+                var store = await _storeRepository.GetStoreByIdAsync(storeDTO.Id.GetValueOrDefault());
                 // mos harro planin
                 if (store != null)
                 {
@@ -82,14 +101,14 @@ namespace TriDViewAPI.Services
                     store.Description = storeDTO.Description;
                     store.StoreLocation = storeDTO.StoreLocation;
                     store.PlanID = storeDTO.PlanID;
-                    store.IsActive = storeDTO.IsActive;
+                    store.IsActive = storeDTO.IsActive.GetValueOrDefault();
                     store.LogoKey = storeDTO.LogoKey;
                 }
                 await _storeRepository.UpdateStoreAsync(store);
             }
             catch (Exception ex) 
             {
-                _logService.LogError("StoreService", ex.ToString());
+                await _logService.LogError("StoreService", ex.ToString());
                 throw;
             }
         }
@@ -97,14 +116,18 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                var directoryPath = _configuration["directoryPath"];
-                string fullPath = Path.Combine(directoryPath, storeDTO.LogoKey);
-                byte[] imageByteArray = Convert.FromBase64String(storeDTO.Base64File);
+                //var directoryPath = _configuration["directoryPath"];
+                //if (storeDTO.LogoKey != null)
+                //{
+                //    string fullPath = Path.Combine(directoryPath, storeDTO.LogoKey);
+                //    byte[] imageByteArray = Convert.FromBase64String(storeDTO.Base64File);
 
-                if (Directory.Exists(directoryPath))
-                {
-                    File.WriteAllBytes(fullPath, imageByteArray);
-                }
+                //    if (Directory.Exists(directoryPath))
+                //    {
+                //        File.WriteAllBytes(fullPath, imageByteArray);
+                //    }
+                //}
+
                 var user = await _userRepository.GetUserByIdAsync(userId);
                 var store = new Store
                 {
@@ -112,7 +135,7 @@ namespace TriDViewAPI.Services
                     Description = storeDTO.Description,   
                     StoreLocation = storeDTO.StoreLocation,
                     DateTimeRegistered = DateTime.Now,
-                    IsActive = storeDTO.IsActive,
+                    IsActive = storeDTO.IsActive.GetValueOrDefault(),
                     PlanID = storeDTO.PlanID,
                     LogoKey = storeDTO.LogoKey,
                     UserRegistered = user
@@ -121,7 +144,68 @@ namespace TriDViewAPI.Services
             }
             catch(Exception ex)
             {
-                _logService.LogError("StoreService", ex.ToString());
+                await _logService.LogError("StoreService", ex.ToString());
+                throw;
+            }
+        }
+        public async Task RegisterStore(StoreDTO storeDTO, IFormFile logo)
+        {
+            try
+            {
+                var directoryPath = _configuration["directoryPath"];
+                string logoFileName = logo?.FileName ?? "default-logo.png";
+
+                int fileIndex = 1;
+                if (logo != null && Directory.Exists(directoryPath))
+                {
+                    string fullLogoPath = Path.Combine(directoryPath, logo.FileName);
+
+                    while (File.Exists(fullLogoPath))
+                    {
+                        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(logoFileName);
+                        string extension = Path.GetExtension(logoFileName);
+                        logoFileName = $"{fileNameWithoutExtension}_{fileIndex++}{extension}";
+                        fullLogoPath = Path.Combine(directoryPath, logoFileName);
+                    }
+                    await using (var stream = new FileStream(fullLogoPath, FileMode.Create))
+                    {
+                        await logo.CopyToAsync(stream);
+                    }
+                }
+
+                var store = new Store
+                {
+                    StoreName = storeDTO.StoreName,
+                    Description = storeDTO.Description,
+                    StoreLocation = storeDTO.StoreLocation,
+                    DateTimeRegistered = DateTime.Now,
+                    IsActive = storeDTO.IsActive.GetValueOrDefault(),
+                    PlanID = storeDTO.PlanID,
+                    LogoKey = logoFileName
+                };
+                await _storeRepository.AddStoreAsync(store);
+
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError("StoreService", $"Error registering store '{storeDTO.StoreName}': {ex}");
+                throw;
+            }
+        }
+        public async Task ConfirmRegistration(int storeId)
+        {
+            try
+            {
+                var store = await _storeRepository.GetStoreByIdAsync(storeId);
+                if (store != null)
+                {
+                    store.IsActive = true;
+                    await _storeRepository.UpdateStoreAsync(store);
+                }
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError("StoreService", ex.ToString());
                 throw;
             }
         }

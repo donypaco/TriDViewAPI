@@ -22,6 +22,7 @@ namespace TriDViewAPI.Services
             {
                 _dbContext.Logs.Add(new Log
                 {
+                    Title = title,
                     Timestamp = DateTimeOffset.UtcNow,
                     Level = "Error",
                     Message = $"Exception: {message}",
@@ -38,6 +39,7 @@ namespace TriDViewAPI.Services
             {
                 _dbContext.Logs.Add(new Log
                 {
+                    Title = title,
                     Timestamp = DateTimeOffset.UtcNow,
                     Level = "Info",
                     Message = message,
@@ -54,6 +56,7 @@ namespace TriDViewAPI.Services
             {
                 _dbContext.Logs.Add(new Log
                 {
+                    Title= title,
                     Timestamp = DateTimeOffset.UtcNow,
                     Level = "Warning",
                     Message = message,

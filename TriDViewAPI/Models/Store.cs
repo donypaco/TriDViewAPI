@@ -9,8 +9,8 @@ namespace TriDViewAPI.Models
         public int Id { get; set; }
 
         [ForeignKey("User")]
-        public int UserID { get; set; }
-        public User UserRegistered { get; set; }
+        public int? UserID { get; set; }
+        public User? UserRegistered { get; set; }
 
         public DateTimeOffset DateTimeRegistered { get; set; } = DateTimeOffset.UtcNow;
 
@@ -24,7 +24,7 @@ namespace TriDViewAPI.Models
         [MaxLength(255)]
         public string StoreLocation { get; set; }
 
-        public string LogoKey { get; set; }
+        public string? LogoKey { get; set; }
 
         public bool IsActive { get; set; } = true;
 
@@ -32,7 +32,7 @@ namespace TriDViewAPI.Models
         public int PlanID { get; set; }
         public Plan Plan { get; set; }
         public bool IsApproved { get; set; } = false;  
-        public string ApprovalNotes { get; set; }
+        public string? ApprovalNotes { get; set; }
         public DateTimeOffset? ApprovalDate { get; set; }
         public List<Store> Stores { get; set; } = new List<Store>();
         public List<Product> Products { get; set; } = new List<Product>();
