@@ -37,7 +37,7 @@ namespace TriDViewTests
             };
 
             _storeRepositoryMock.Setup(repo => repo.GetAllActiveStoresAsync())
-                .ReturnsAsync(stores.Where(s => s.IsActive));
+                .ReturnsAsync(stores.Where(s => s.IsActive.GetValueOrDefault()));
 
             var result = await _storeService.GetAllActiveStores();
 
