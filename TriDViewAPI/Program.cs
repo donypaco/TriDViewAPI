@@ -6,10 +6,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using TriDViewAPI.Data;
 using TriDViewAPI.Models;
-using TriDViewAPI.Services.Interfaces;
-using TriDViewAPI.Services;
-using TriDViewAPI.Data.Repositories;
-using TriDViewAPI.Data.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,13 +20,30 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ILogService, LogService>();
-builder.Services.AddScoped<IPlanService, PlanService>();
-builder.Services.AddScoped<IStoreService, StoreService>();
-builder.Services.AddScoped<IStoreRepository, StoreRepository>();
-builder.Services.AddScoped<IPlanRepository, PlanRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+var appServices = typeof(Program).Assembly.GetTypes()
+    .Where(t => t.Name.EndsWith("Service") && !t.IsInterface && !t.IsAbstract)
+    .ToList();
+
+foreach (var service in appServices)
+{
+    var serviceInterface = service.GetInterfaces().FirstOrDefault(i => i.Name == $"I{service.Name}");
+    if (serviceInterface != null)
+    {
+        builder.Services.AddScoped(serviceInterface, service);
+    }
+}
+
+var appRepositories = typeof(Program).Assembly.GetTypes()
+    .Where(t => t.Name.EndsWith("Repository") && !t.IsInterface && !t.IsAbstract)
+    .ToList();
+foreach (var repository in appRepositories)
+{
+    var repositoryInterface = repository.GetInterfaces().FirstOrDefault(i => i.Name == $"I{repository.Name}");
+    if (repositoryInterface != null)
+    {
+        builder.Services.AddScoped(repositoryInterface, repository);
+    }
+}
 
 builder.Services.AddCors(p => p.AddPolicy("AllowAnyOrigin",
         policy => policy

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using TriDViewAPI.Services;
+﻿using Microsoft.AspNetCore.Mvc;
 using TriDViewAPI.Services.Interfaces;
 
 namespace TriDViewAPI.Controllers

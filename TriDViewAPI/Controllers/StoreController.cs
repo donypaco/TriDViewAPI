@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TriDViewAPI.DTO;
-using TriDViewAPI.Services;
 using TriDViewAPI.Services.Interfaces;
 
 namespace TriDViewAPI.Controllers
@@ -22,18 +20,33 @@ namespace TriDViewAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStore(int id)
         {
-            var store = await _storeService.GetStoreById(id);
-            if (store == null)
-                return NotFound();
-            return Ok(store);
+            try {
+                var store = await _storeService.GetStoreById(id);
+                if (store == null)
+                    return NotFound();
+                return Ok(store);
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError("StoreController", ex.ToString());
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
         [HttpGet]
         public async Task<IActionResult> GetAllActiveStores()
         {
-            var store = await _storeService.GetAllActiveStores();
-            if (store == null)
-                return NotFound();
-            return Ok(store);
+            try
+            {
+                var store = await _storeService.GetAllActiveStores();
+                if (store == null)
+                    return NotFound();
+                return Ok(store);
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError("StoreController", ex.ToString());
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStore(int id)
@@ -49,7 +62,7 @@ namespace TriDViewAPI.Controllers
             }
             catch (Exception ex)
             {
-                await _logService.LogError("UserController", ex.ToString());
+                await _logService.LogError("StoreController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
@@ -72,7 +85,7 @@ namespace TriDViewAPI.Controllers
             }
             catch (Exception ex)
             {
-                await _logService.LogError("UserController", ex.ToString());
+                await _logService.LogError("StoreController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
@@ -98,7 +111,7 @@ namespace TriDViewAPI.Controllers
             }
             catch (Exception ex)
             {
-                await _logService.LogError("UserController", ex.ToString());
+                await _logService.LogError("StoreController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
@@ -116,7 +129,7 @@ namespace TriDViewAPI.Controllers
             }
             catch (Exception ex)
             {
-                await _logService.LogError("UserController", ex.ToString());
+                await _logService.LogError("StoreController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
@@ -134,7 +147,7 @@ namespace TriDViewAPI.Controllers
             }
             catch (Exception ex)
             {
-                await _logService.LogError("UserController", ex.ToString());
+                await _logService.LogError("StoreController", ex.ToString());
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
