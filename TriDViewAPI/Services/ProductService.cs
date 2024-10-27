@@ -10,10 +10,12 @@ namespace TriDViewAPI.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly ILogService _logService;
-        public ProductService( IProductRepository productRepository, IConfiguration configuration, ILogService logService)
+        private readonly IUserRepository _userRepository;
+        public ProductService( IProductRepository productRepository, IConfiguration configuration, ILogService logService, IUserRepository userRepository)
         {
             _productRepository = productRepository;
             _logService = logService;
+            _userRepository = userRepository;
         }
 
         public async Task<IEnumerable<ProductDTO>> GetAllStoreProducts(int storeId)
@@ -53,15 +55,15 @@ namespace TriDViewAPI.Services
                 throw;
             }
         }
-        public async Task UpdateProduct(ProductDTO ProductDTO)
+        public async Task UpdateProduct(ProductDTO productDTO)
         {
             try
             {
-                var product = await _productRepository.GetProductByIdAsync(productDTO.ProductId.GetValueOrDefault());
+                var product = await _productRepository.GetProductByIdAsync(productDTO.ProductID);
                 if (product != null)
                 {
+                    await _productRepository.UpdateProductAsync(product);
                 }
-                await _productRepository.UpdateProductAsync(product);
             }
             catch (Exception ex)
             {
