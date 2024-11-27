@@ -23,7 +23,7 @@ namespace TriDViewTests
             _logServiceMock = new Mock<ILogService>();
             _configurationMock = new Mock<IConfiguration>();
             
-            _configurationMock.Setup(config => config["directoryPath"]).Returns("C:\\Users\\USER\\Downloads\\TriDViewApp");
+            _configurationMock.Setup(config => config["LogoDirectoryPath"]).Returns("C:\\Users\\USER\\Downloads\\TriDViewApp");
             _storeService = new StoreService(_storeRepositoryMock.Object, _userRepositoryMock.Object, _configurationMock.Object, _logServiceMock.Object);
         }
 

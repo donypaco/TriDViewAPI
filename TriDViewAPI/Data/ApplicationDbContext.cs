@@ -15,6 +15,7 @@ namespace TriDViewAPI.Data
         public DbSet<Store> Stores { get; set; }
         public DbSet<Plan> Plans { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

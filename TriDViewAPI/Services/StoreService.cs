@@ -4,6 +4,7 @@ using TriDViewAPI.Data.Repositories.Interfaces;
 using TriDViewAPI.DTO;
 using TriDViewAPI.Models;
 using TriDViewAPI.Services.Interfaces;
+using TriDViewAPI.Helpers;
 
 namespace TriDViewAPI.Services
 {
@@ -37,38 +38,29 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                var directoryPath = _configuration["directoryPath"];
+                var directoryPath = _configuration["LogoDirectoryPath"];
                 var stores = await _storeRepository.GetAllActiveStoresAsync();
-                var storeDTOs = new List<StoreDTO>();
+                //var storeDTOs = new List<StoreDTO>();
 
                 foreach (var store in stores)
                 {
-                    var storeDto = new StoreDTO
-                    {
-                        Id = store.Id,
-                        Description = store.Description,
-                        StoreName = store.StoreName,
-                        StoreLocation = store.StoreLocation,
-                        PlanID = store.PlanID,
-                        IsActive = store.IsActive,
-                        LogoKey = store.LogoKey
-                    };
+                    //var storeDto = new StoreDTO
+                    //{
+                    //    Id = store.Id,
+                    //    Description = store.Description,
+                    //    StoreName = store.StoreName,
+                    //    StoreLocation = store.StoreLocation,
+                    //    PlanID = store.PlanID,
+                    //    IsActive = store.IsActive,
+                    //    LogoKey = store.LogoKey
+                    //};
 
-
-                    if (!string.IsNullOrWhiteSpace(store.LogoKey))
-                    {
-                        string fullPath = Path.Combine(directoryPath, store.LogoKey);
-                        if (File.Exists(fullPath))
-                        {
-                            var imageByteArray = System.IO.File.ReadAllBytes(fullPath);
-                            storeDto.Base64File = Convert.ToBase64String(imageByteArray);
-                        }
-                    }
-
-                    storeDTOs.Add(storeDto);
+                    store.Base64File = await HelperMethods.FindImage(directoryPath, store.LogoKey);
+                    
+                    //storeDTOs.Add(store);
                 }
 
-                return storeDTOs;
+                return stores;
             }
             catch (Exception ex)
             {
@@ -116,18 +108,6 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                //var directoryPath = _configuration["directoryPath"];
-                //if (storeDTO.LogoKey != null)
-                //{
-                //    string fullPath = Path.Combine(directoryPath, storeDTO.LogoKey);
-                //    byte[] imageByteArray = Convert.FromBase64String(storeDTO.Base64File);
-
-                //    if (Directory.Exists(directoryPath))
-                //    {
-                //        File.WriteAllBytes(fullPath, imageByteArray);
-                //    }
-                //}
-
                 var user = await _userRepository.GetUserByIdAsync(userId);
                 var store = new Store
                 {
@@ -152,26 +132,10 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                var directoryPath = _configuration["directoryPath"];
+                string directoryPath = _configuration["LogoDirectoryPath"];
                 string logoFileName = logo?.FileName ?? "default-logo.png";
 
-                int fileIndex = 1;
-                if (logo != null && Directory.Exists(directoryPath))
-                {
-                    string fullLogoPath = Path.Combine(directoryPath, logo.FileName);
-
-                    while (File.Exists(fullLogoPath))
-                    {
-                        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(logoFileName);
-                        string extension = Path.GetExtension(logoFileName);
-                        logoFileName = $"{fileNameWithoutExtension}_{fileIndex++}{extension}";
-                        fullLogoPath = Path.Combine(directoryPath, logoFileName);
-                    }
-                    await using (var stream = new FileStream(fullLogoPath, FileMode.Create))
-                    {
-                        await logo.CopyToAsync(stream);
-                    }
-                }
+                logoFileName = await HelperMethods.SavePhotoToPathAsync(directoryPath, logoFileName, logo);
 
                 var store = new Store
                 {

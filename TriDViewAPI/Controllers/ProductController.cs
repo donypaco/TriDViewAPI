@@ -93,7 +93,7 @@ namespace TriDViewAPI.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> AddProduct([FromBody] ProductDTO productDto)
+        public async Task<IActionResult> AddProduct([FromBody] ProductDTO productDto, IFormFile image)
         {
             try
             {
@@ -108,7 +108,7 @@ namespace TriDViewAPI.Controllers
 
                 int userId = int.Parse(userIdClaim.Value);
 
-                await _productService.AddProduct(productDto, userId);
+                await _productService.AddProduct(productDto, userId, image);
 
                 return NoContent();
             }

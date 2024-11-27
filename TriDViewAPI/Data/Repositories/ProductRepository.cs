@@ -22,7 +22,7 @@ namespace TriDViewAPI.Data.Repositories
                 {
                     ProductID = p.ProductID,
                     Name = p.Name,
-                    Category = p.Category,
+                    Category = p.Category.CategoryName,
                     Price = p.Price,
                     Quantity = p.Quantity,
                     Description = p.Description,
