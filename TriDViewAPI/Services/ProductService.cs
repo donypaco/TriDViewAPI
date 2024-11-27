@@ -1,6 +1,8 @@
 ﻿
+using System.Collections.Generic;
 using TriDViewAPI.Data.Repositories.Interfaces;
 using TriDViewAPI.DTO;
+using TriDViewAPI.Helpers;
 using TriDViewAPI.Models;
 using TriDViewAPI.Services.Interfaces;
 
@@ -9,33 +11,61 @@ namespace TriDViewAPI.Services
     public class ProductService: IProductService
     {
         private readonly IProductRepository _productRepository;
-        private readonly ILogService _logService;
         private readonly IUserRepository _userRepository;
-        public ProductService( IProductRepository productRepository, IConfiguration configuration, ILogService logService, IUserRepository userRepository)
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly ILogService _logService;
+        private readonly IConfiguration _configuration;
+        public ProductService( IProductRepository productRepository, IUserRepository userRepository, 
+            ICategoryRepository categoryRepository, ILogService logService, IConfiguration configuration)
         {
             _productRepository = productRepository;
-            _logService = logService;
             _userRepository = userRepository;
+            _categoryRepository = categoryRepository;
+            _logService = logService;
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<ProductDTO>> GetAllStoreProducts(int storeId)
         {
             try
             {
-                return await _productRepository.GetAllStoreProductsAsync(storeId);
+                var directoryPath = _configuration["LogoDirectoryPath"];
+
+                IEnumerable<ProductDTO> products = await _productRepository.GetAllStoreProductsAsync(storeId);
+                foreach (var product in products)
+                {
+                    product.Base64File = await HelperMethods.FindImage(directoryPath, product.ImageUrl);
+                }
+                return products;
             }
             catch (Exception ex)
             {
                 _logService.LogError("ProductService", ex.ToString());
             }
             return Enumerable.Empty<ProductDTO>();
-            ;
         }
-        public async Task<Product> GetProductById(int id)
+        public async Task<ProductDTO> GetProductById(int id)
         {
             try
             {
-                return await _productRepository.GetProductByIdAsync(id);
+                var directoryPath = _configuration["LogoDirectoryPath"];
+                var product = await _productRepository.GetProductByIdAsync(id);
+
+                ProductDTO productDTO = new ProductDTO
+                {
+                    Name = product.Name,
+                    CategoryID = product.CategoryID,
+                    Description = product.Description,
+                    Price = product.Price,
+                    Rating = product.Rating,
+                    Height = product.Height,
+                    Weight = product.Weight,
+                    IsActive = product.IsActive,
+                    Quantity = product.Quantity
+                };
+
+                productDTO.Base64File = await HelperMethods.FindImage(directoryPath, productDTO.ImageUrl);
+                return productDTO;
             }
             catch (Exception ex)
             {
@@ -71,25 +101,31 @@ namespace TriDViewAPI.Services
                 throw;
             }
         }
-        public async Task AddProduct(ProductDTO ProductDTO, int userId)
+        public async Task AddProduct(ProductDTO productDTO, int userId, IFormFile image)
         {
             try
             {
-                //var directoryPath = _configuration["directoryPath"];
-                //if (storeDTO.LogoKey != null)
-                //{
-                //    string fullPath = Path.Combine(directoryPath, storeDTO.LogoKey);
-                //    byte[] imageByteArray = Convert.FromBase64String(storeDTO.Base64File);
+                string directoryPath = _configuration["ProductsDirectoryPath"];
+                string fileName = image?.FileName ?? "default-product.png";
 
-                //    if (Directory.Exists(directoryPath))
-                //    {
-                //        File.WriteAllBytes(fullPath, imageByteArray);
-                //    }
-                //}
+                fileName = await HelperMethods.SavePhotoToPathAsync(directoryPath, fileName, image);
 
                 var user = await _userRepository.GetUserByIdAsync(userId);
                 var product = new Product
                 {
+                    Name = productDTO.Name,
+                    DateAdded = DateTime.Now,
+                    Description = productDTO.Description,
+                    Height = productDTO.Height,
+                    Weight = productDTO.Weight,
+                    SKU = productDTO.SKU,
+                    Discount = productDTO.Discount,
+                    ImageUrl = fileName,
+                    IsActive = productDTO.IsActive.GetValueOrDefault(),
+                    Price = productDTO.Price,
+                    Tags = productDTO.Tags,
+                    CategoryID = productDTO.CategoryID,
+                    UserID = userId
                 };
                 await _productRepository.AddProductAsync(product);
             }

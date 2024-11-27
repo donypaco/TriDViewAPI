@@ -29,5 +29,9 @@
         public decimal? Weight { get; set; }
 
         public decimal? Rating { get; set; }
+        public int CategoryID { get; set; }
+        public bool? IsActive { get; set; }
+        public IFormFile formFile { get; set; }
+        public string? Base64File { get; set; }
     }
 }

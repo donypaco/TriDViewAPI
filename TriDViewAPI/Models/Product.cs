@@ -21,8 +21,9 @@ namespace TriDViewAPI.Models
         [MaxLength(255)]
         public string Name { get; set; }
 
-        [MaxLength(255)]
-        public string Category { get; set; }
+        [ForeignKey("Plan")]
+        public int CategoryID { get; set; }
+        public Category Category { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10, 2)")]
