@@ -5,6 +5,7 @@ using TriDViewAPI.DTO;
 using TriDViewAPI.Models;
 using TriDViewAPI.Services.Interfaces;
 using TriDViewAPI.Helpers;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace TriDViewAPI.Services
 {
@@ -40,24 +41,10 @@ namespace TriDViewAPI.Services
             {
                 var directoryPath = _configuration["LogoDirectoryPath"];
                 var stores = await _storeRepository.GetAllActiveStoresAsync();
-                //var storeDTOs = new List<StoreDTO>();
 
                 foreach (var store in stores)
                 {
-                    //var storeDto = new StoreDTO
-                    //{
-                    //    Id = store.Id,
-                    //    Description = store.Description,
-                    //    StoreName = store.StoreName,
-                    //    StoreLocation = store.StoreLocation,
-                    //    PlanID = store.PlanID,
-                    //    IsActive = store.IsActive,
-                    //    LogoKey = store.LogoKey
-                    //};
-
                     store.Base64File = await HelperMethods.FindImage(directoryPath, store.LogoKey);
-                    
-                    //storeDTOs.Add(store);
                 }
 
                 return stores;
@@ -86,7 +73,6 @@ namespace TriDViewAPI.Services
             try
             {
                 var store = await _storeRepository.GetStoreByIdAsync(storeDTO.Id.GetValueOrDefault());
-                // mos harro planin
                 if (store != null)
                 {
                     store.StoreName = storeDTO.StoreName;
@@ -128,14 +114,14 @@ namespace TriDViewAPI.Services
                 throw;
             }
         }
-        public async Task RegisterStore(StoreDTO storeDTO, IFormFile logo)
+        public async Task RegisterStore(StoreDTO storeDTO)
         {
             try
             {
-                string directoryPath = _configuration["LogoDirectoryPath"];
-                string logoFileName = logo?.FileName ?? "default-logo.png";
+                //string directoryPath = _configuration["LogoDirectoryPath"];
+                //string logoFileName = logo?.FileName ?? "default-logo.png";
 
-                logoFileName = await HelperMethods.SavePhotoToPathAsync(directoryPath, logoFileName, logo);
+                //logoFileName = await HelperMethods.SavePhotoToPathAsync(directoryPath, logoFileName, logo);
 
                 var store = new Store
                 {
@@ -144,8 +130,8 @@ namespace TriDViewAPI.Services
                     StoreLocation = storeDTO.StoreLocation,
                     DateTimeRegistered = DateTime.Now,
                     IsActive = storeDTO.IsActive.GetValueOrDefault(),
-                    PlanID = storeDTO.PlanID,
-                    LogoKey = logoFileName
+                    PlanID = storeDTO.PlanID
+                    //LogoKey = logoFileName
                 };
                 await _storeRepository.AddStoreAsync(store);
 
@@ -156,6 +142,27 @@ namespace TriDViewAPI.Services
                 throw;
             }
         }
+        public async Task UploadStoreLogo(int storeId, IFormFile image)
+        {
+            try
+            {
+                Store store = await _storeRepository.GetStoreByIdAsync(storeId);
+
+                string directoryPath = _configuration["LogoDirectoryPath"];
+                string logoFileName = image?.FileName ?? "default-logo.png";
+
+                logoFileName = await HelperMethods.SavePhotoToPathAsync(directoryPath, logoFileName, image);
+
+                store.LogoKey = logoFileName;
+                await _storeRepository.UpdateStoreAsync(store);
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError("StoreService", $"Error uploading store image id: '{storeId}': {ex}");
+                throw;
+            }
+        }
+
         public async Task ConfirmRegistration(int storeId)
         {
             try

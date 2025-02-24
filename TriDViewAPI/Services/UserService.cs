@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TriDViewAPI.Data;
+using TriDViewAPI.Data.Repositories.Interfaces;
 using TriDViewAPI.DTO;
 using TriDViewAPI.Models;
 using TriDViewAPI.Services;
@@ -19,22 +20,31 @@ namespace TriDViewAPI.Services
         private readonly IConfiguration _configuration;
         private readonly UserManager<User> _userManager;
         private readonly ILogService _logService;
+        private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
 
-        public UserService(ApplicationDbContext context, IConfiguration configuration, UserManager<User> userManager, ILogService logService)
+        public UserService(ApplicationDbContext context, IConfiguration configuration, UserManager<User> userManager, ILogService logService,
+            IUserRepository userRepository, IRoleRepository roleRepository)
         {
             _context = context;
             _configuration = configuration;
             _userManager = userManager;
             _logService = logService;
+            _userRepository = userRepository;
+            _roleRepository = roleRepository;
         }
         public async Task<string> Register(RegisterModel model)
         {
             try
             {
-                var role = await _context.Roles.FindAsync(model.RoleId);
+                var existingUser = await _userRepository.GetUserByEmailAsync(model.Email);
+                if (existingUser != null)
+                    return "Email already registered!";
+
+                var role = await _roleRepository.GetRoleById(model.RoleId);
                 if (role == null)
                 {
-                    return null;
+                    return "No role found!";
                 }
 
                 User user = new User
@@ -44,8 +54,7 @@ namespace TriDViewAPI.Services
                     Email = model.Email,
                     Role = role
                 };
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                await _userRepository.AddUserAsync(user);
 
                 return GenerateJwtToken(user);
             }
@@ -60,7 +69,7 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                var user = _context.Users.SingleOrDefault(u => u.UserName == model.Username);
+                var user = await _userRepository.GetUserByEmailAsync(model.Email);
                 if (user != null)
                 {
                     var passwordVerificationResult = _userManager.PasswordHasher.VerifyHashedPassword(user, user.Password, model.Password);
@@ -125,13 +134,7 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                var roles = await _context.Roles.Select(r => new RoleDTO
-                {
-                    Id = r.Id,
-                    RoleName = r.RoleName
-                }).ToListAsync();
-
-                return roles;
+                  return await _roleRepository.GetAllRoles();
             }
             catch (Exception ex)
             {

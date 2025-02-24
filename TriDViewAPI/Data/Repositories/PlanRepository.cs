@@ -22,6 +22,5 @@ namespace TriDViewAPI.Data.Repositories
                 PlanName = p.PlanName
             }).ToListAsync();
         }
-
     }
 }
