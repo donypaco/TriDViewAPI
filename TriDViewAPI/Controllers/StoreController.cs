@@ -116,14 +116,14 @@ namespace TriDViewAPI.Controllers
             }
         }
         [HttpPost("Register")]
-        public async Task<IActionResult> RegisterStore([FromForm] StoreDTO storeDto)
+        public async Task<IActionResult> RegisterStore([FromBody] StoreDTO storeDto)
         {
             try
             {
-                if (storeDto == null || storeDto.formFile == null)
+                if (storeDto == null)
                     return BadRequest("Invalid store data");
 
-                await _storeService.RegisterStore(storeDto, storeDto.formFile);
+                await _storeService.RegisterStore(storeDto);
 
                 return NoContent();
             }
@@ -133,6 +133,25 @@ namespace TriDViewAPI.Controllers
                 return StatusCode(500, "An error occurred while processing the request.");
             }
         }
+        [HttpPost("UploadLogo/{storeId}")]
+        public async Task<IActionResult> UploadLogo([FromForm] IFormFile formFile, [FromRoute] int storeId)
+        {
+            try
+            {
+                if (formFile == null)
+                    return BadRequest("Invalid image!");
+
+                await _storeService.UploadStoreLogo(storeId, formFile);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogError("StoreController", ex.ToString());
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
+
         [HttpPut("ConfirmRegistration/{storeId}")]
         public async Task<IActionResult> ConfirmRegistration(int storeId)
         {

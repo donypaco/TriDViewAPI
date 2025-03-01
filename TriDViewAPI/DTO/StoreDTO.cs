@@ -12,7 +12,7 @@ namespace TriDViewAPI.DTO
         public int PlanID { get; set; }
         public bool? IsActive { get; set; }
         //public byte[]? LogoBytes { get; set; } // Renamed to LogoBytes for clarity
-        public IFormFile formFile { get; set; }
+        //public IFormFile formFile { get; set; }
         public string? Base64File { get; set; }
     }
 }
