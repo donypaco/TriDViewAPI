@@ -1,5 +1,6 @@
 ﻿
-using System.Collections.Generic;
+using Microsoft.Extensions.Options;
+using TriDViewAPI.Configurations;
 using TriDViewAPI.Data.Repositories.Interfaces;
 using TriDViewAPI.DTO;
 using TriDViewAPI.Helpers;
@@ -12,24 +13,26 @@ namespace TriDViewAPI.Services
     {
         private readonly IProductRepository _productRepository;
         private readonly IUserRepository _userRepository;
-        private readonly ICategoryRepository _categoryRepository;
+        //private readonly ICategoryRepository _categoryRepository;
         private readonly ILogService _logService;
-        private readonly IConfiguration _configuration;
+        //private readonly IConfiguration _configuration;
+        private readonly AppSettings _appSettings;
         public ProductService( IProductRepository productRepository, IUserRepository userRepository, 
-            ICategoryRepository categoryRepository, ILogService logService, IConfiguration configuration)
+           ILogService logService, IOptions<AppSettings> options)
         {
             _productRepository = productRepository;
             _userRepository = userRepository;
-            _categoryRepository = categoryRepository;
+            //_categoryRepository = categoryRepository;
             _logService = logService;
-            _configuration = configuration;
+            //_configuration = configuration;
+            _appSettings = options.Value;
         }
 
         public async Task<IEnumerable<ProductDTO>> GetAllStoreProducts(int storeId)
         {
             try
             {
-                var directoryPath = _configuration["LogoDirectoryPath"];
+                var directoryPath = _appSettings.LogoDirectoryPath;
 
                 IEnumerable<ProductDTO> products = await _productRepository.GetAllStoreProductsAsync(storeId);
                 foreach (var product in products)
@@ -48,7 +51,7 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                var directoryPath = _configuration["LogoDirectoryPath"];
+                var directoryPath = _appSettings.LogoDirectoryPath;
                 var product = await _productRepository.GetProductByIdAsync(id);
 
                 ProductDTO productDTO = new ProductDTO
@@ -105,7 +108,7 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                string directoryPath = _configuration["ProductsDirectoryPath"];
+                string directoryPath = _appSettings.ProductsDirectoryPath;
                 string fileName = image?.FileName ?? "default-product.png";
 
                 fileName = await HelperMethods.SavePhotoToPathAsync(directoryPath, fileName, image);

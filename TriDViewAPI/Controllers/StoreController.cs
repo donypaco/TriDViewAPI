@@ -123,7 +123,7 @@ namespace TriDViewAPI.Controllers
                 if (storeDto == null || storeDto.formFile == null)
                     return BadRequest("Invalid store data");
 
-                await _storeService.RegisterStore(storeDto, storeDto.formFile);
+                await _storeService.RegisterStore(storeDto);
 
                 return NoContent();
             }

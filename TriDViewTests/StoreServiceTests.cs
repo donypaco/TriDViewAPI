@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
+using TriDViewAPI.Configurations;
 using TriDViewAPI.Data.Repositories.Interfaces;
 using TriDViewAPI.DTO;
 using TriDViewAPI.Models;
@@ -16,15 +18,22 @@ namespace TriDViewTests
 
         private readonly StoreService _storeService;
         private readonly Mock<IConfiguration> _configurationMock;
+        private readonly IOptions<AppSettings> _options;
         public StoreServiceTests()
         {
             _storeRepositoryMock = new Mock<IStoreRepository>();
             _userRepositoryMock = new Mock<IUserRepository>();
             _logServiceMock = new Mock<ILogService>();
             _configurationMock = new Mock<IConfiguration>();
-            
+            var appSettings = new AppSettings
+            {
+                //ConnectionStrings.DbConnection = "TestValue"
+            };
+
+            // Krijo Options nga AppSettings
+            _options = Options.Create(appSettings);
             _configurationMock.Setup(config => config["LogoDirectoryPath"]).Returns("C:\\Users\\USER\\Downloads\\TriDViewApp");
-            _storeService = new StoreService(_storeRepositoryMock.Object, _userRepositoryMock.Object, _configurationMock.Object, _logServiceMock.Object);
+            _storeService = new StoreService(_storeRepositoryMock.Object, _userRepositoryMock.Object, _configurationMock.Object, _logServiceMock.Object, _options);
         }
 
         [Fact]
