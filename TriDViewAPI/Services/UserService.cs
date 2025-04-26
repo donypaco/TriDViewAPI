@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using TriDViewAPI.Configurations;
 using TriDViewAPI.Data;
+using TriDViewAPI.Data.Repositories;
+using TriDViewAPI.Data.Repositories.Interfaces;
 using TriDViewAPI.DTO;
 using TriDViewAPI.Models;
 using TriDViewAPI.Services;
@@ -16,25 +20,34 @@ namespace TriDViewAPI.Services
     public class UserService : IUserService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration;
         private readonly UserManager<User> _userManager;
         private readonly ILogService _logService;
+        private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
+        private readonly AppSettings.JwtSettings _jwtSettings;
 
-        public UserService(ApplicationDbContext context, IConfiguration configuration, UserManager<User> userManager, ILogService logService)
+        public UserService(ApplicationDbContext context, UserManager<User> userManager, ILogService logService,
+            IUserRepository userRepository,  IOptions<AppSettings> appSettings, IRoleRepository roleRepository)
         {
             _context = context;
-            _configuration = configuration;
             _userManager = userManager;
             _logService = logService;
+            _userRepository = userRepository;
+            _jwtSettings = appSettings.Value.Jwt;
+            _roleRepository = roleRepository;
         }
         public async Task<string> Register(RegisterModel model)
         {
             try
             {
-                var role = await _context.Roles.FindAsync(model.RoleId);
+                var existingUser = await _userRepository.GetUserByEmailAsync(model.Email);
+                if (existingUser != null)
+                    return "Email already registered!";
+
+                var role = await _roleRepository.GetRoleById(model.RoleId);
                 if (role == null)
                 {
-                    return null;
+                    return "No role found!";
                 }
 
                 User user = new User
@@ -44,8 +57,7 @@ namespace TriDViewAPI.Services
                     Email = model.Email,
                     Role = role
                 };
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                await _userRepository.AddUserAsync(user);
 
                 return GenerateJwtToken(user);
             }
@@ -60,7 +72,7 @@ namespace TriDViewAPI.Services
         {
             try
             {
-                var user = _context.Users.SingleOrDefault(u => u.UserName == model.Username);
+                var user = _context.Users.SingleOrDefault(u => u.Email == model.Email);
                 if (user != null)
                 {
                     var passwordVerificationResult = _userManager.PasswordHasher.VerifyHashedPassword(user, user.Password, model.Password);
@@ -93,19 +105,19 @@ namespace TriDViewAPI.Services
             try
             {
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
                 var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 var claims = new List<Claim>
                 {
                 new Claim(ClaimTypes.NameIdentifier, user.Id_User.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Aud, _configuration["Jwt:Audience"])
+                new Claim(JwtRegisteredClaimNames.Aud, _jwtSettings.Audience)
                 };
 
                 var token = new JwtSecurityToken(
-                    _configuration["Jwt:Issuer"],
-                    _configuration["Jwt:Issuer"],
+                    _jwtSettings.Issuer,
+                    _jwtSettings.Issuer,
                     claims,
                     expires: DateTime.Now.AddMinutes(10),
                     signingCredentials: credentials
